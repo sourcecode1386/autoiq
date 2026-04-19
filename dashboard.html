@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Revenue Intelligence Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  background: #0f172a;
+  padding: 14px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left { display: flex; align-items: center; gap: 20px; }
+.header-title {
+  font-size: 14px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: white;
+}
+.header-badge {
+  background: rgba(6,182,212,0.15);
+  color: #06b6d4;
+  border: 1px solid rgba(6,182,212,0.3);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+.header-meta {
+  font-size: 11px;
+  color: #475569;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Dashboard grid ── */
+.dashboard {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 22px 24px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* ── Filter bar ── */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.filter-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.filter-pill {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 4px 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: default;
+  user-select: none;
+}
+.filter-pill.active {
+  background: #0f172a;
+  color: white;
+  border-color: #0f172a;
+}
+
+/* ── KPI row ── */
+.kpi-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.kpi-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 16px 18px 14px;
+}
+.kpi-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 9px;
+}
+.kpi-value {
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -1.5px;
+  margin-bottom: 7px;
+}
+.kpi-footer {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 600;
+}
+.kpi-footer .sub { color: #94a3b8; font-weight: 400; font-size: 10px; }
+.up   { color: #059669; }
+.down { color: #dc2626; }
+.flat { color: #94a3b8; }
+
+/* ── Panels ── */
+.panel {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 18px 20px;
+}
+.panel-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.panel-sub {
+  font-size: 11px;
+  color: #94a3b8;
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Chart rows ── */
+.row-2-1 {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 14px;
+}
+.row-1-2 {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 14px;
+}
+
+/* ── Table ── */
+table.acct {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+table.acct th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #94a3b8;
+  padding: 0 10px 10px;
+  border-bottom: 1px solid #f1f5f9;
+}
+table.acct th.r { text-align: right; }
+table.acct td {
+  padding: 9px 10px;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
+}
+table.acct tr:last-child td { border-bottom: none; }
+table.acct td.r { text-align: right; }
+.acct-name { font-weight: 600; }
+.acct-seg  { font-size: 10px; color: #94a3b8; margin-top: 2px; }
+.mono      { font-family: 'DM Mono', monospace; font-size: 12px; }
+.score-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.chip-band { font-size: 10px; color: #94a3b8; font-weight: 400; }
+
+/* ── Legend ── */
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #64748b;
+}
+.legend-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="header-title">Revenue Intelligence</span>
+    <span class="header-badge">Live View</span>
+  </div>
+  <div class="header-meta">FY 2024 · Q4 · As of Dec 31</div>
+</div>
+
+<div class="dashboard">
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <span class="filter-label">Segment</span>
+    <span class="filter-pill active">All</span>
+    <span class="filter-pill">Enterprise</span>
+    <span class="filter-pill">Mid-Market</span>
+    <span class="filter-pill">SMB</span>
+    <span class="filter-label" style="margin-left:12px;">Period</span>
+    <span class="filter-pill active">FY 2024</span>
+    <span class="filter-pill">Q4</span>
+    <span class="filter-pill">Q3</span>
+  </div>
+
+  <!-- KPI row -->
+  <div class="kpi-row" id="kpiRow"></div>
+
+  <!-- Row 1: Line chart + Horizontal bar -->
+  <div class="row-2-1">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Monthly ARR Trend</span>
+        <span class="panel-sub">Jan – Dec 2024</span>
+      </div>
+      <svg id="lineChart" viewBox="0 0 580 155" style="width:100%;display:block;overflow:visible;"></svg>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">ARR by Segment</span>
+        <span class="panel-sub">$3.70M total</span>
+      </div>
+      <svg id="horizBar" viewBox="0 0 280 155" style="width:100%;display:block;overflow:visible;"></svg>
+    </div>
+  </div>
+
+  <!-- Row 2: Distribution + Accounts table -->
+  <div class="row-1-2">
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Score Distribution</span>
+        <span class="panel-sub">92 accounts</span>
+      </div>
+      <svg id="distChart" viewBox="0 0 240 130" style="width:100%;display:block;overflow:visible;"></svg>
+      <div class="legend" id="distLegend"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-header">
+        <span class="panel-title">Top Accounts by ARR</span>
+        <span class="panel-sub">Ranked by revenue</span>
+      </div>
+      <table class="acct" id="acctTable"></table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const ARR_MONTHLY = [2.10, 2.28, 2.47, 2.41, 2.69, 2.91, 3.10, 2.83, 3.24, 3.52, 3.41, 3.70];
+
+const SEGMENTS = [
+  { name: 'Enterprise', arr: 1.82, color: '#06b6d4' },
+  { name: 'Mid-Market', arr: 1.21, color: '#059669' },
+  { name: 'SMB',        arr: 0.67, color: '#d97706' },
+];
+
+const DISTRIBUTION = [
+  { label: 'Strong',   range: '85–100', count: 24, color: '#06b6d4' },
+  { label: 'Good',     range: '70–84',  count: 38, color: '#059669' },
+  { label: 'Moderate', range: '50–69',  count: 22, color: '#d97706' },
+  { label: 'Low',      range: '0–49',   count:  8, color: '#dc2626' },
+];
+
+const ACCOUNTS = [
+  { name: 'Acme Corp',        seg: 'Enterprise',  arr: 280000, score: 91, trend: '↑', trendDir: 'up'   },
+  { name: 'TechFlow Inc',     seg: 'Enterprise',  arr: 195000, score: 84, trend: '→', trendDir: 'flat' },
+  { name: 'Velocity Co',      seg: 'Mid-Market',  arr: 175000, score: 67, trend: '↓', trendDir: 'down' },
+  { name: 'DataBridge LLC',   seg: 'Enterprise',  arr: 162000, score: 88, trend: '↑', trendDir: 'up'   },
+  { name: 'NexGen Solutions', seg: 'Mid-Market',  arr: 148000, score: 45, trend: '↓', trendDir: 'down' },
+  { name: 'CloudPeak',        seg: 'Mid-Market',  arr: 132000, score: 76, trend: '↑', trendDir: 'up'   },
+  { name: 'Orbit Systems',    seg: 'SMB',         arr: 119000, score: 72, trend: '→', trendDir: 'flat' },
+  { name: 'Summit Analytics', seg: 'SMB',         arr: 108000, score: 58, trend: '↓', trendDir: 'down' },
+];
+
+const KPIS = [
+  { label: 'Total ARR',        value: '$3.70M', delta: '+18%',   dir: 'up',   sub: 'vs. prior year'    },
+  { label: 'New Bookings',     value: '$840K',  delta: '+12%',   dir: 'up',   sub: 'vs. prior year'    },
+  { label: 'Avg Health Score', value: '74',     delta: '+3 pts', dir: 'up',   sub: 'vs. prior quarter' },
+  { label: 'At-Risk Accounts', value: '8',      delta: '−2',     dir: 'up',   sub: 'vs. prior quarter' },
+];
+
+// ── Helpers ───────────────────────────────────────────────────────────────
+
+function scoreColor(s) {
+  if (s >= 85) return '#06b6d4';
+  if (s >= 70) return '#059669';
+  if (s >= 50) return '#d97706';
+  return '#dc2626';
+}
+function scoreBand(s) {
+  if (s >= 85) return 'Strong';
+  if (s >= 70) return 'Good';
+  if (s >= 50) return 'Moderate';
+  return 'Low';
+}
+
+const NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) {
+  const e = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+  return e;
+}
+function svgTxt(content, attrs) {
+  const e = svgEl('text', attrs);
+  e.textContent = content;
+  return e;
+}
+
+// ── KPI cards ─────────────────────────────────────────────────────────────
+
+const kpiRow = document.getElementById('kpiRow');
+KPIS.forEach(k => {
+  const col = k.dir === 'up' ? '#059669' : '#dc2626';
+  const arrow = k.dir === 'up' ? '↑' : '↓';
+  kpiRow.innerHTML += `
+    <div class="kpi-card">
+      <div class="kpi-label">${k.label}</div>
+      <div class="kpi-value">${k.value}</div>
+      <div class="kpi-footer">
+        <span class="${k.dir}">${arrow} ${k.delta}</span>
+        <span class="sub">${k.sub}</span>
+      </div>
+    </div>`;
+});
+
+// ── Line chart ────────────────────────────────────────────────────────────
+
+(function() {
+  const svg = document.getElementById('lineChart');
+  const W = 580, H = 155, pL = 40, pR = 14, pT = 14, pB = 26;
+  const lo = 1.6, hi = 4.2;
+
+  function px(i) { return pL + (i / 11) * (W - pL - pR); }
+  function py(v) { return pT + (1 - (v - lo) / (hi - lo)) * (H - pT - pB); }
+
+  // gradient
+  const defs = svgEl('defs', {});
+  const grad = svgEl('linearGradient', { id: 'areaGrad', x1: '0', y1: '0', x2: '0', y2: '1' });
+  grad.appendChild(svgEl('stop', { offset: '0%',   'stop-color': '#06b6d4', 'stop-opacity': '0.15' }));
+  grad.appendChild(svgEl('stop', { offset: '100%', 'stop-color': '#06b6d4', 'stop-opacity': '0.01' }));
+  defs.appendChild(grad);
+  svg.appendChild(defs);
+
+  // gridlines + y-axis labels
+  [2.0, 2.5, 3.0, 3.5, 4.0].forEach(v => {
+    const y = py(v);
+    svg.appendChild(svgEl('line', { x1: pL, y1: y, x2: W - pR, y2: y, stroke: '#f1f5f9', 'stroke-width': 1 }));
+    svg.appendChild(svgTxt(`$${v.toFixed(1)}M`, {
+      x: pL - 5, y: y + 3.5, 'text-anchor': 'end',
+      'font-size': '9', fill: '#cbd5e1', 'font-family': 'DM Mono, monospace'
+    }));
+  });
+
+  const pts = ARR_MONTHLY.map((v, i) => ({ x: px(i), y: py(v) }));
+
+  // area
+  const areaD = `M ${pts[0].x},${pts[0].y} ` +
+    pts.slice(1).map(p => `L ${p.x},${p.y}`).join(' ') +
+    ` L ${pts[11].x},${H - pB} L ${pts[0].x},${H - pB} Z`;
+  svg.appendChild(svgEl('path', { d: areaD, fill: 'url(#areaGrad)', stroke: 'none' }));
+
+  // line
+  svg.appendChild(svgEl('polyline', {
+    points: pts.map(p => `${p.x},${p.y}`).join(' '),
+    fill: 'none', stroke: '#06b6d4', 'stroke-width': '2.2',
+    'stroke-linejoin': 'round', 'stroke-linecap': 'round'
+  }));
+
+  // dots + x labels + callout values
+  pts.forEach((p, i) => {
+    svg.appendChild(svgEl('circle', { cx: p.x, cy: p.y, r: 3.5, fill: '#06b6d4', stroke: 'white', 'stroke-width': 2 }));
+
+    if (i % 2 === 0 || i === 11) {
+      svg.appendChild(svgTxt(MONTHS[i], {
+        x: p.x, y: H - pB + 14, 'text-anchor': 'middle',
+        'font-size': '9.5', fill: '#94a3b8', 'font-weight': '600', 'font-family': 'DM Sans, sans-serif'
+      }));
+    }
+    // callout on first, peak, and last
+    if (i === 0 || i === 9 || i === 11) {
+      svg.appendChild(svgTxt(`$${ARR_MONTHLY[i].toFixed(2)}M`, {
+        x: p.x, y: p.y - 8, 'text-anchor': 'middle',
+        'font-size': '9', fill: '#06b6d4', 'font-weight': '700', 'font-family': 'DM Mono, monospace'
+      }));
+    }
+  });
+})();
+
+// ── Horizontal bar chart ──────────────────────────────────────────────────
+
+(function() {
+  const svg = document.getElementById('horizBar');
+  const W = 280, pL = 76, pR = 52, rowH = 34, startY = 20;
+  const maxArr = Math.max(...SEGMENTS.map(s => s.arr));
+  const total  = SEGMENTS.reduce((a, s) => a + s.arr, 0);
+  const barAvail = W - pL - pR;
+
+  SEGMENTS.forEach((seg, i) => {
+    const y   = startY + i * rowH;
+    const barW = (seg.arr / (maxArr * 1.12)) * barAvail;
+    const pct  = Math.round((seg.arr / total) * 100);
+
+    // track
+    svg.appendChild(svgEl('rect', { x: pL, y: y - 9, width: barAvail, height: 18, rx: 4, fill: '#f8fafc' }));
+    // bar
+    svg.appendChild(svgEl('rect', { x: pL, y: y - 9, width: barW, height: 18, rx: 4, fill: seg.color, opacity: '0.88' }));
+    // name
+    svg.appendChild(svgTxt(seg.name, {
+      x: pL - 8, y: y + 4.5, 'text-anchor': 'end',
+      'font-size': '11', fill: '#0f172a', 'font-weight': '600', 'font-family': 'DM Sans, sans-serif'
+    }));
+    // value
+    svg.appendChild(svgTxt(`$${seg.arr.toFixed(2)}M`, {
+      x: pL + barW + 6, y: y + 4, 'font-size': '9.5',
+      fill: seg.color, 'font-weight': '700', 'font-family': 'DM Mono, monospace'
+    }));
+    // pct
+    svg.appendChild(svgTxt(`${pct}%`, {
+      x: W - 2, y: y + 4, 'text-anchor': 'end',
+      'font-size': '9.5', fill: '#94a3b8', 'font-weight': '600', 'font-family': 'DM Mono, monospace'
+    }));
+  });
+})();
+
+// ── Distribution chart ────────────────────────────────────────────────────
+
+(function() {
+  const svg  = document.getElementById('distChart');
+  const leg  = document.getElementById('distLegend');
+  const W = 240, H = 130, pL = 10, pR = 10, pT = 10, pB = 34;
+  const maxC = Math.max(...DISTRIBUTION.map(d => d.count));
+  const n    = DISTRIBUTION.length;
+  const barW = 38;
+  const totalW = n * barW + (n - 1) * 10;
+  const offsetX = pL + (W - pL - pR - totalW) / 2;
+
+  DISTRIBUTION.forEach((d, i) => {
+    const x    = offsetX + i * (barW + 10);
+    const barH = ((d.count / (maxC * 1.12)) * (H - pT - pB));
+    const y    = H - pB - barH;
+
+    svg.appendChild(svgEl('rect', { x, y: H - pB - (H - pT - pB), width: barW, height: H - pT - pB, rx: 3, fill: '#f8fafc' }));
+    svg.appendChild(svgEl('rect', { x, y, width: barW, height: barH, rx: 3, fill: d.color, opacity: '0.85' }));
+    svg.appendChild(svgTxt(d.count, {
+      x: x + barW / 2, y: y - 5, 'text-anchor': 'middle',
+      'font-size': '11', fill: d.color, 'font-weight': '700', 'font-family': 'DM Mono, monospace'
+    }));
+    svg.appendChild(svgTxt(d.range, {
+      x: x + barW / 2, y: H - pB + 14, 'text-anchor': 'middle',
+      'font-size': '8.5', fill: '#94a3b8', 'font-family': 'DM Mono, monospace'
+    }));
+
+    // legend
+    leg.innerHTML += `
+      <div class="legend-item">
+        <div class="legend-swatch" style="background:${d.color};opacity:.85;"></div>
+        ${d.label}
+      </div>`;
+  });
+})();
+
+// ── Accounts table ────────────────────────────────────────────────────────
+
+(function() {
+  const table = document.getElementById('acctTable');
+  const rows  = ACCOUNTS.map(a => {
+    const col  = scoreColor(a.score);
+    const tCol = a.trendDir === 'up' ? '#059669' : a.trendDir === 'down' ? '#dc2626' : '#94a3b8';
+    const arr  = '$' + (a.arr / 1000).toFixed(0) + 'K';
+    return `
+      <tr>
+        <td><div class="acct-name">${a.name}</div><div class="acct-seg">${a.seg}</div></td>
+        <td class="r"><span class="mono" style="color:#0f172a;">${arr}</span></td>
+        <td class="r">
+          <span class="score-chip" style="color:${col};">
+            <span class="chip-dot" style="background:${col};"></span>
+            ${a.score}
+            <span class="chip-band">${scoreBand(a.score)}</span>
+          </span>
+        </td>
+        <td class="r"><span style="font-size:14px;color:${tCol};">${a.trend}</span></td>
+      </tr>`;
+  }).join('');
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>Account</th>
+        <th class="r">ARR</th>
+        <th class="r">Health Score</th>
+        <th class="r">Trend</th>
+      </tr>
+    </thead>
+    <tbody>${rows}</tbody>`;
+})();
+</script>
+</body>
+</html>
